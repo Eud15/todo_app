@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask to do app</title>
+</head>
+<style>
+    .hidden{
+        display: none;
+    }
+    ul{
+        list-style: none;
+        padding: 0;
+        margin: 0px;
+    }
+    li {
+        clear: both;
+      }
+      li button {
+        -webkit-appearance: none;
+        border: none;
+        outline: none;
+        color: red;
+        float: right;
+        cursor: pointer;
+        /* font-size: 10px; */
+      }
+      .lists-wrapper, .todose-wrapper {
+        display: inline-block;
+        vertical-align: top;
+      }
+</style>
+<body>
+    <div class="lists-wrapper">
+        <ul id="lists">
+            <!-- {% for list in lists %}
+            <li>
+              <a href="/lists/{{ list.id }}">
+                {{ list.name }}
+              </a>
+            </li>
+            {% endfor %} -->
+          </ul>
+    </div>
+    <div class="todose-wrapper">
+        <form id="form">
+            <input id="description" type="text" name="description" />
+            <input  type="submit" value="Create" />
+        </form>
+        <div id="error" class="hidden">Quelque chose ne va pas</div>
+        <ul id="todose">
+            {% for d in data %}
+            <li><input class="check-completed" data-id="{{ d.id }}" type="checkbox" {% if d.completed %} checked {% endif %}>
+                {{ d.description }}
+                <button class="delete-button" data-id="{{ d.id }}">&cross;</button>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <script>
+        const deleteBtn = document.querySelectorAll('.delete-button');
+        for (let i=0; i<deleteBtn.length; i++){
+            const btn = deleteBtn[i];
+            btn.onclick = function(e){
+                const todoId = e.target.dataset['id'];
+                fetch('todose/' + todoId, {
+                    method: 'DELETE'
+            })
+
+            }
+        }
+
+        const checkboxe = document.querySelectorAll('.check-completed');
+        for (let i=0; i < checkboxe.length; i++){
+            const checkbox = checkboxe[i];
+            checkbox.onchange = function(e){
+                const newCompleted = e.target.checked;
+                const todoId = e.target.dataset['id'];
+                fetch('/todose/' + todoId + '/set-completed', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        'completed': newCompleted
+                    }),
+                    headers:{
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(function(){
+                    document.getElementById('error').className = 'hidden'
+                })
+                .catch(function(){
+                    document.getElementById('error').className = '';
+                })
+            }
+        }
+        document.getElementById('form').onsubmit = function(e){
+            e.preventDefault();
+            fetch('/todose/create', {
+                method: 'POST',
+                body: JSON.stringify({
+                    'description': document.getElementById('description').value
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(function(response)
+            {
+                return response.json();
+            })
+            .then(function(jsonResponse) {
+                console.log(jsonResponse);
+                const liItem = document.createElement('LI');
+                liItem.innerHTML = jsonResponse['description'];
+                document.getElementById('todose').appendChild(liItem);
+                document.getElementById('error').className = 'hidden';
+                
+            })
+            .catch(function(){
+                document.getElementById('error').className = '';
+            })
+        }
+    </script>
+</body>
+</html>
