@@ -1,5 +1,4 @@
-echo "# todo_app" >> README.md
-[A[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[### Development Setup
+### Development Setup
 
 First, [install Flask](http://flask.pocoo.org/docs/1.0/installation/#install-flask) if you haven't already.
 
